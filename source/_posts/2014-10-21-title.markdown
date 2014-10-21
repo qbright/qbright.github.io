@@ -1,0 +1,16 @@
+---
+layout: post
+title: "title"
+date: 2014-10-21 12:43:22 +0800
+comments: true
+categories: js
+---
+
+###this is a  test js blog
+
+heellodd
+
+
+<!-- more -- >
+
+dfadsfasfasfasdfasf
