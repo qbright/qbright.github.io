@@ -1,0 +1,8 @@
+---
+layout: post
+title: "titleddd"
+date: 2014-11-07 16:37:31 +0800
+comments: true
+categories: js
+---
+hello  i am a titititti
