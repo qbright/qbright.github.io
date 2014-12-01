@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Js | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/js/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-10-21T13:28:38+08:00</updated>
+  <updated>2014-11-07T17:52:24+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -12,6 +12,15 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Titleddd]]></title>
+    <link href="http://qbright.github.io/blog/2014/11/07/titleddd/"/>
+    <updated>2014-11-07T16:37:31+08:00</updated>
+    <id>http://qbright.github.io/blog/2014/11/07/titleddd</id>
+    <content type="html"><![CDATA[<p>hello  i am a titititti</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Title]]></title>
