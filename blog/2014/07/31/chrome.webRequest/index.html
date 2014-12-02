@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>chrome.webRequest 研究 - 光域</title>
+  <meta name="author" content="zqbright">
+
+  
+  <meta name="description" content="今天说下 chrome.webRequest 的 api 用法， 这个api主要用于处理网络的请求，对应到特定情境中对特定匹配的网络请求进行分析处理，chrome.webRequest api 由九个事件组成，这九个事件是一个网络请求生命周期中的九个不同的阶段，可以说控制的粒度已经很细， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://qbright.github.io/blog/2014/07/31/chrome.webRequest">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="光域" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">光域</a></h1>
+  
+    <h2>&lt;html/&gt</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:qbright.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">chrome.webRequest 研究</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-07-31T19:07:23+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>7:07 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>今天说下 <strong>chrome.webRequest</strong> 的 api 用法， 这个api主要用于处理网络的请求，对应到特定情境中对特定匹配的网络请求进行分析处理，<strong>chrome.webRequest</strong> api 由<strong>九个事件</strong>组成，这九个事件是一个网络请求生命周期中的九个不同的阶段，可以说控制的粒度已经很细，基本可以覆盖到特定的时间点。这套api提供了很强大的请求控制功能，因此如果代码有问题，那么后果可能相当严重，在配置<strong>manifest.json</strong> 的<strong>permission</strong>时要注意，最好能够指定到特定的url规则中去，而不是 <code>http://\*\*/\*</code>和<code>https：//\*\*/\*</code>,这样如果代码出现逻辑错误，那么可能整个浏览器就不能用了，比如你把所有的url都重定向到 一个错误的url去，那么你的浏览器就呵呵了。</p>
+
+<!-- more -->
+
+
+<p>下面是这九个事件的关系图：
+    <img src="http://fed.yy.com/wp-content/uploads/2014/07/9ab65b5eb36af14389b63f4f828b7ccdc9e5074b8356-6vD89J_fw658-270x300.png" alt="" /></p>
+
+<p>这九个事件根据请求的顺序最开始是 onBeforeRequest ，最后是 onComplete，基本的顺序如图所示，需要说明的是在onAuthRequired事件之后会再次触发onBeforeSendHeaders，而在onBeforeRedirect之后会重新出发 onBeforeRequest，而如果请求的url是 data或者是file协议，则在执行完onBeforeRequest事件之后会直接触发 onResponseStarted ,在这顺序之下，如果出现错误，都会触发onErrorOccurred事件，也就是说，如果我们对一个网络请求进行监听，那么只有onBeforeRequest事件必定会触发，后面的事件会根据情况才会触发。</p>
+
+<p>下面是每个事件触发的时机和功能：</p>
+
+<ul>
+<li>onBeforeRequest : 在一个请求发生的时候，tcp连接之前被触发，可以用于重定向请求或者是进行请求拦截取消</li>
+<li>onBeforeSendHeaders : 在一个请求发生的时候，初始的http(s) headers已经准备好的时候触发，这个事件主要用于修改发送的头部信息。在这个事件阶段中可以进行请求的拦截取消或者重定向</li>
+<li>onSendHeaders ： 在所有注册了onBeforeSendHeaders事件（可能在不同扩展中）都触发之后，http(s) header发向网络之前触发，这个事件是异步的，触发时不会阻塞http header 发向网络，也就是说不能改变header的信息了。</li>
+<li>onHeadersReceived ： 在http(s) headers 接受的时候触发，这个事件主要用于修改接收到的http(s) headers 。 在这个事件中可以控制请求。</li>
+<li>onAuthRequired ： 在一个请求需要用户认证的时候被触发。</li>
+<li>onBeforeRedirect ： 在一个重定向请求产生的触发，这是一个异步事件，不能控制请求</li>
+<li>onResponseStarted：在响应的first byte 接收到的时候触发。对于http请求，这个请求触发的时候status line(状态信息) 和 头部都已经获得，这个一个异步事件，不能控制请求。</li>
+<li>onCompleted ： 在一个请求成功之后触发</li>
+<li>onErrorOccurred ： 在一个请求失败时候触发</li>
+</ul>
+
+
+<p>webRequest API 只会监听在host permission中配置的域名，只对 http、https、ftp、file、chrome-extension 协议起作用，另外有些url是上面协议的，但是被排除在监听范围内，例如 chrome-extension 中其他扩展发出的request，<a href="https://www.google.com/chrome">https://www.google.com/chrome</a> 等，都不会被监听到。另外，在扩展中的<strong>同步</strong>XMLHttpRequest请求也不会被拦截下来，以免造成死锁。另外，有些协议只会触发 本身支持的事件，例如 file:// 协议，只会触发 onBeforeRquest ，onResponseStarted，onCompleted，onErrorOccurred 。</p>
+
+<p>如何去将注册一个事件：
+通过事件的 addListener 方法可以注册一个webRequest事件，addListener 接收三个参数，第一个参数是callback方法，会返回一个object对象，其中包含了这次请求的详细信息。具体包括</p>
+
+<ul>
+<li>frameId 发出请求的frameId</li>
+<li>method 请求的方式</li>
+<li>parentFrameId 发出请求的frameId的父frameId，如果没有，则为-1</li>
+<li>requestId : 这个Id在一次浏览器的session和一个扩展中是唯一的，用于识别各个请求</li>
+<li>tabId ： 请求发出的tab页面的id，如果是从扩展中发出的，则为-1</li>
+<li>timeStamp : 请求发出的时间戳</li>
+<li>type ： 请求是由那类元素发出来的</li>
+<li>url ： 请求的url</li>
+</ul>
+
+
+<p>第二个参数是一个过滤器，用于匹配符合条件的请求，参数如下：</p>
+
+<ul>
+<li>urls ： urls数组，被匹配到的才会触发回调</li>
+<li>types : 匹配请求发出的元素类型 ，有 main_frame、sub_frame、stylesheet、script、image、object、xmlhttprequest、other</li>
+<li>tabId ：匹配由哪个tab发出的</li>
+<li>windowId : 匹配由哪个window发出的</li>
+</ul>
+
+
+<p>第三个参数是指定是否进行请求阻塞（对于一些特定事件起效），当指定为blocking 之后，回调函数将会是同步的，意味着这个请求将会被阻塞直到回调完成， 这样子我们可以返回一个blickingResponse对请求进行控制，具体如下：</p>
+
+<ul>
+<li>cancel ： 拦截请求，只能在onBeforeRequest中使用</li>
+<li>redirectUrl ： 重定向请求，只能在onBeforeRequest和onHeadersReceived中使用</li>
+<li>requestHeaders ： 修改request请求http header ，只能在onBeforeSendHeaders中使用</li>
+<li>responseHeaders ： 修改response请求的http header ，只能在onHeadersReceived 中使用</li>
+<li>authCredentials ： 修改验证的username和password信息，只能在onAuthRequired中使用</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">zqbright</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-07-31T19:07:23+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>7:07 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chrome-extension/'>chrome extension</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://qbright.github.io/blog/2014/07/31/chrome.webRequest/" data-via="" data-counturl="http://qbright.github.io/blog/2014/07/31/chrome.webRequest/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/05/27/chrome.tabs/" title="Previous Post: chrome.tabs 的事件研究">&laquo; chrome.tabs 的事件研究</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<!-- <aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/07/31/chrome.webRequest/">chrome.webRequest 研究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/27/chrome.tabs/">chrome.tabs 的事件研究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/22/chrome.extension.csp/">内容安全策略(CSP)</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside> &#8211;>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - zqbright -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

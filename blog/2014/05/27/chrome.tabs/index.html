@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>chrome.tabs 的事件研究 - 光域</title>
+  <meta name="author" content="zqbright">
+
+  
+  <meta name="description" content="这边文章主要对chrome.tabs 中的事件接口进行介绍，前半部分将对主要的事件接口的用法,场景进行介绍，后半部分将对一些常用的操作中说触发的事件进行解剖 chrome extension api 中定义了一套关于监听和操作浏览器标签页tabs的接口 , 用于对tabs的操作和状态改变的监听。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://qbright.github.io/blog/2014/05/27/chrome.tabs">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="光域" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">光域</a></h1>
+  
+    <h2>&lt;html/&gt</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:qbright.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">chrome.tabs 的事件研究</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-05-27T19:01:56+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>7:01 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>这边文章主要对chrome.tabs 中的事件接口进行介绍，前半部分将对主要的事件接口的用法,场景进行介绍，后半部分将对一些常用的操作中说触发的事件进行解剖</p>
+
+<!-- more -->
+
+
+<p>chrome extension api 中定义了一套关于监听和操作浏览器标签页tabs的接口 , 用于对tabs的操作和状态改变的监听。
+在扩展中使用chrome.tabs 的 api 需要在manifest.json 中的permission 属性中添加 tabs ：</p>
+
+<p>{
+&ldquo; permissions &rdquo; : [ &ldquo; tabs &rdquo; ]
+}
+chrome.tabs 的事件中很多情况下面会返回一个 Tab 对象 , 对象包含以下属性 :
+&gt; * id ：在浏览器生命周期周期内Tab的唯一标识
+* index ：从0开始标识一个window下面的Tab
+* window ：tab的窗口id
+* openerTabId ：打开当前tab的tabId
+* selected ：标记tab页有没有被选中
+* highlighted ：标记tab页有没有被高亮
+* active ：标记tab页在其所在的window中有没有处于激活状态
+* pinned ：标记tab页有没有被固定
+* url ：tab页所展现的内容的url , 需要permission中有tabs 权限
+* title : tab页所展现的title , 需要permission中有tabs 权限
+* faviconUrl ：tab页面icon的url,需要permission中有tabs 权限 , 如果是在loading状态下tab页的faviconUrl可能是空的
+* status ：标识tab的状态 , loading和complete 两种
+* incognito ：标识tab页是否在隐身页状态
+* width ：tab的宽度
+* height ：tab的高度</p>
+
+<p>chrome.tabs 中提供了若干个tabs的状态变化事件 , 让开发者可以比较精细的去监听自己关注的事件,事件列表如下 :
+&gt; * onCreated ： 在一个标签创建的时候被触发
+* onUpdated ：在一个标签状态改变之后被触发
+* onMoved ： 在一个标签被移动的时候被触发
+* onActived ： 当一个标签被激活的时候被触发
+* onHighlightChanged ：当一个标签被高亮的时候被触发
+* onDetached ：当一个标签脱离一个窗口(window) 的时候被触发
+* onAttached ：当一个窗口的标签附着到另外一个窗口的时候被触发
+* onRemoved ：当标签被移除的时候被触发
+* onReplaced ： 当标签被替换的时候被触发</p>
+
+<p>用法：</p>
+
+<p>chrome.tabs.onSomeEvent.addListener(function callback)</p>
+
+<p>下面对每个事件进行分析：</p>
+
+<p><strong>onCreated</strong>
+&gt; 在tab页<strong>被创建</strong>的时候被触发 , url 和 title 可能是空的 . 如果需要得到url等信息，可以使用 <strong>onUpdated</strong> 事件 在url设置的时候获取。</p>
+
+<p>&gt;&gt; chrome.tabs.onCreated.addListener(function(Tab){
+<em>doSomeThing..</em>
+});</p>
+
+<p>&gt; 在创建tab页的时候会发出这个事件 , 一般会返回以下信息</p>
+
+<p>&gt; 这里需要注意的是在一些情况下title和url属性的值可能为空：</p>
+
+<p>&gt; * 在页面中跳转链接时会为空
+* 当在页面中的链接使用右键菜单的时候会有这些信息</p>
+
+<p><strong>onUpdated</strong></p>
+
+<p>&gt; 在页面<strong>状态发生改变</strong>的时候出发这个事件
+&gt;&gt; chrome.tabs.onUpdated.addListener(function(tabId , changeInfo, tab){
+<em>doSomeThing..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * tabId : 触发事件的Tab的tabId
+* changeInfo : 这个主要返回两个状态, 一个是<strong>loading</strong> 另外一个是<strong>complete</strong>
+* tab : tab对象</p>
+
+<p><strong>onMoved</strong>
+&gt; 当tab页在一个window中的tab顺序发生改变的时候触发事件
+&gt;&gt; chrome.tabs.onMoved.addListener(function(tabId,moveinfo){
+<em>doSomething..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * tabId : 触发事件的Tab的tabId
+* moveInfo : 移动的情况 , 其中包括三个属性 : fromIndex , toIndex , windowId ; 分别表示 原来tab的位置 , 当前tab的位置 , 所在的windowId.</p>
+
+<p>&gt;&gt; <strong>说明</strong> 在移动的过程中move事件可能会被触发多次 , 具体为 <strong>|fromIndex - toIndex| &gt; 1</strong> , 也就是说当tab页面移动一个位置时 , 会<strong>触发一次事件</strong>，当没有 “跨过” tab 页面的时候，不会触发事件 , 而且move事件<strong>只对</strong>在通过window中的移动生效 , 如果tab页被移动到别的widnow中去 , 将会触发<strong>onDetached</strong>事件 , 而不会触发move事件。</p>
+
+<p><strong>onActivated</strong></p>
+
+<p>&gt; 当在一个window中的tab页面被激活的时候被触发
+&gt;&gt; chrome.tabs.onActivated.addListener(function(activeInfo){
+<em>doSomething..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * activeInfo 中包括tabId 和 windowId . 分别是被激活标签的tabId 和 被激活标签所在window的windowId .</p>
+
+<p>&gt;&gt;<strong>说明</strong> activated 事件只会在同个window中的激活事件被触发，如果有多个window , 切换window带来的tab切换不会触发activated事件</p>
+
+<p><strong>onHighlight</strong>
+&gt;在同一个window中有tab被高亮时被触发
+&gt;&gt; chrome.tabs.onHighlight.addListener(function(highlightInfo){
+<em>doSomething..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * highlightInfo 中包括 windowId 和 存储tabId 的数组</p>
+
+<p>&gt;&gt; <strong>说明</strong> highlighted 事件也是一种激活事件,那和 activated 事件有什么不同呢，我们可以看到 highlightInfo 中有可以存储多个 tabId 的数组 , 而activated事件中只能存储一个tabId , 这说明在通过 window 中 , 能存在多个tab被激活 , 原来 , 在chrome中使用shift键可以<strong>连续选中多个tab</strong> , 在这种情况下，highlighted和activated事件就存在区别了</p>
+
+<p><strong>onDetached</strong>
+&gt; 在一个tab被脱离原来的window的时候被触发</p>
+
+<p>&gt;&gt; chrome.tabs.onDetached.addListener(function(tabId,detachInfo){
+<em>doSomething..</em>
+});
+回调函数的参数中 :</p>
+
+<p>&gt;&gt; * tabId 为被脱离window的tab的id , detachInfo 中有 oldPosition , oldWindowId , 表示 被脱离window的tab原有的位置(index) 和 window的Id</p>
+
+<p><strong>onAttached</strong></p>
+
+<p>&gt; 在一个tab被贴附到window的时候被触发</p>
+
+<p>&gt;&gt; chrome.tabs.onAttached.addListener(function(tabId,attachInfo){
+<em>doSomething..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * tabId 为贴附到windowd的tab的id, attacheInfo 中有 newWindowId , newPosition , 表示 贴附的window的 id 和 tab贴附的位置(index)</p>
+
+<p><strong>onRemoved</strong></p>
+
+<p>&gt; 在一个tab被关闭的时候被触发</p>
+
+<p>&gt;&gt; chrome.tabs.onRemoved.addListener(function(tabId,removeInfo){
+<em>doSomething..</em>
+});
+回调函数的参数中:</p>
+
+<p>&gt;&gt; * tabId 为被关闭的 tab 的 id , removeInfo 中有 isWindowClosing 和 windowId, 表示是否是通过关闭浏览器的按钮关闭的tab , windowId 表示被关闭的tab 所在的window 的 id .</p>
+
+<p>&gt;&gt; <strong>说明</strong> isWindowClosing参数只在点击window的关闭按钮才会返回true , 在原生的chrome中 , 关闭了最后一个tab会把所在的 window也给关掉 , 这种情况下会返回false .</p>
+
+<p><strong>onReplaced</strong></p>
+
+<p>&gt;在 一个tab页面被替换的时候被触发 , 存在于 预先加载页面 等情境中</p>
+
+<p>&gt;&gt; chrome.tabs.onReplaced.addListener(function(addedTabId,removeTabId){
+<em>doSomething..</em>
+});
+回调函数的参数中：</p>
+
+<p>&gt;&gt; * addedTabId 表示替换的Tab的id
+* removeTabId 表示被替换的Tab的id</p>
+
+<p>&gt;&gt; <strong>说明</strong> replace事件的触发情景从官方文档中很难被真正理解 , 官方文档的描述是<strong>Fired when a tab is replaced with another tab due to prerendering or instant.</strong> 通过查阅资料，在chrome设置了 <strong>预测网络操作，以提高网页加载速度</strong> 的情况下有可能触发这个事件</p>
+
+<hr />
+
+<hr />
+
+<hr />
+
+<p>下面对一些常用的动作所触发的事件进行解析，以便大家更好的了解tabs 的事件机制：
+&gt;<em> <strong>在tabs的事件机制中，触发的事件优先级已经确定，不会因为先后注册而产生回调的顺序不同的情况发生。</strong>
+&gt;</em> <strong>一般来说每个浏览器tab页的操作都会触发多个事件，一个事件可能被多个动作说触发，所以需要根据你需要监听的事件颗粒度进行组合</strong></p>
+
+<p><strong>新建标签页</strong>
+&gt; 新建标签页的时候会依次触发 :
+&gt;&gt; * onCreated
+* onActivated
+* onHighlighted
+* 若干个 onUpdated</p>
+
+<p>&gt; 从上面的顺序可以看出，打开这个动作其实分成两部分，一部分是开个一个空白页面onCreated,第二部分才是加载内容onUpdated,因此，有些时候在onCreated中的url和title为空，如果要获取打开的页面的url和title , 可以在create回调中使用<strong>chrome.tabs.get</strong> 获取tab的详细信息。</p>
+
+<p><strong>刷新当前页面</strong>
+&gt; 刷新页面的时候发触发 若干次的update事件。
+&gt; 按照状态来分的话一般是两次 , 分别是在页面 <strong>loading</strong> 和 <strong>complete</strong> 的时候分别触发事件 , 这两次触发的说返回的tab信息一般不同 , complete的信息会比较的丰富，但是触发的时间和页面的加载时间相关。</p>
+
+<p><strong>关闭页面</strong></p>
+
+<p>&gt; 关闭页面的时候会一次触发以下事件:
+&gt;&gt; * onRemove
+* onActivated
+* onHighlighted</p>
+
+<p>&gt; 关闭的时候会首先触发当前页面的remove事件 , 其回调中返回的tabId为移除的tabid , 在移除之后其他的tab页面会被选中高亮, 因此会触发这个页面的activated事件和highlighted事件 , 这个时候返回的就是被选中高亮的页面的tabid。</p>
+
+<p><strong>Tab页之间的切换</strong></p>
+
+<p>&gt; 切换tab页的时候会触发以下事件：</p>
+
+<p>&gt;&gt; * onActivated
+* onHighlighted</p>
+
+<p>&gt; 切换的时候会触发 activated 事件和 highlighted 事件 , 需要注意的是 , 在切换的时候不会触发<strong>updated</strong> 事件 , 即使tab的actiavte 状态已经改变。
+&gt; 从上面的例子可以看出：<strong>onActivated</strong> 和 <strong>onHighlighted</strong> 事件会被同时触发 , 区别在于使用 <strong>shift</strong> 选中多个tab的时候onHighlighted会返回多个tab 的数组。</p>
+
+<p><strong>将Tab页拖拽至其他窗口</strong></p>
+
+<p>&gt; 动作将依次触发以下事件：
+&gt;&gt;* onDetached
+* onActivated
+* onHighlighted
+* onActached
+* onActivated
+* onHighlighted
+* onDetached
+* onActached
+* onActivated
+* onHighlighted</p>
+
+<p>&gt;这个动作触发了九次事件，是的，就是这么多次,这九个事件是怎么来的呢？首先, 当你将一个tab从原来的window中脱出的时候触发了 <strong>detached</strong> 事件，原来window的其他页面会触发 <strong>activated</strong> 和 <strong>highlighted</strong> 事件 , 在你拖动的过程中 , 其实又间接生成了一个window , 在将你的tab附着上去让你进行拖动 , 因此会分别触发 <strong>actached</strong> , <strong>activated</strong> , <strong>highlighted</strong> 事件 , 当你到达目标窗口的时候 , 首先会脱离刚刚生成的这个window , 触发<strong>detached</strong>事件 , 然后附着到目标窗口, 触发 <strong>actached</strong> 和 <strong>activated</strong> 和 <strong>highlighted</strong> 事件</p>
+
+<p>上面就是对各个事件接口的解析和常用操作触发事件的分析，由于各种动作说触发的事件都不是唯一的，因此在选定事件的时候要根据具体的业务需求监听最适合的事件，这样能够减少事件的冗余触发，保证扩展的性能。对tab的事件触发进行分析，能够很好的了解tab动作的细节，建议大家可以做些实验</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">zqbright</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-05-27T19:01:56+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>7:01 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chrome-extension/'>chrome extension</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://qbright.github.io/blog/2014/05/27/chrome.tabs/" data-via="" data-counturl="http://qbright.github.io/blog/2014/05/27/chrome.tabs/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/05/22/chrome.extension.csp/" title="Previous Post: 内容安全策略(CSP)">&laquo; 内容安全策略(CSP)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/07/31/chrome.webRequest/" title="Next Post: chrome.webRequest 研究">chrome.webRequest 研究 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<!-- <aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/07/31/chrome.webRequest/">chrome.webRequest 研究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/27/chrome.tabs/">chrome.tabs 的事件研究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/22/chrome.extension.csp/">内容安全策略(CSP)</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside> &#8211;>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - zqbright -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
