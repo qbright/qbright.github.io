@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Js | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/js/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-12-04T18:15:26+08:00</updated>
+  <updated>2014-12-04T18:18:19+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -187,8 +187,9 @@ Backbone events have 3 arguments)
     <link href="http://qbright.github.io/blog/2014/12/03/backbone/"/>
     <updated>2014-12-03T16:46:22+08:00</updated>
     <id>http://qbright.github.io/blog/2014/12/03/backbone</id>
-    <content type="html"><![CDATA[<p>开始对前端的MVC框架 <a href="http://backbonejs.org/">Backbone.js</a>进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。
-&lt;! &ndash; more &ndash;></p>
+    <content type="html"><![CDATA[<p>开始对前端的MVC框架 <a href="http://backbonejs.org/">Backbone.js</a>进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。</p>
+
+<p>&lt;! &ndash; more &ndash;></p>
 
 <h3>目录</h3>
 
