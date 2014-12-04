@@ -9,7 +9,8 @@
   <meta name="author" content="zqbright">
 
   
-  <meta name="description" content="开始对前端的MVC框架 Backbone.js进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。 目录 Backbone.Event ">
+  <meta name="description" content="开始对前端的MVC框架 Backbone.js进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。
+&lt;! &ndash; more &ndash;> 目录 Backbone.Event &#8220;>
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -84,7 +85,8 @@
   </header>
 
 
-<div class="entry-content"><p>开始对前端的MVC框架 <a href="http://backbonejs.org/">Backbone.js</a>进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。</p>
+<div class="entry-content"><p>开始对前端的MVC框架 <a href="http://backbonejs.org/">Backbone.js</a>进行学习，会从Event、Model、Collection、View等几个模块进行解析和源码阅读。
+&lt;! &ndash; more &ndash;></p>
 
 <h3>目录</h3>
 
@@ -168,6 +170,35 @@
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/qbright">@qbright</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'qbright',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 
