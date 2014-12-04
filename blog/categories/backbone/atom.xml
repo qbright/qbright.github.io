@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Backbone | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/backbone/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-12-04T18:21:21+08:00</updated>
+  <updated>2014-12-04T18:32:22+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -47,128 +47,206 @@
 
 <h4>on   <code>object.on(event,callback,[context]) Alias:bind</code></h4>
 
-<p><code>on</code>方法用于绑定一个事件，在事件被触发的时候，绑定的回调函数会被触发，类似于DOM元素的事件机制，当然<code>backbone</code>支持自定义事件。下面我们看看<code>on</code>的实现代码：</p>
-
-<pre><code>on: function(name, callback, context) {
-  if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
-  this._events || (this._events = {});
-  var events = this._events[name] || (this._events[name] = []);
-  events.push({callback: callback, context: context, ctx: context || this});
-  return this;
-}
-</code></pre>
-
-<p>当调用<code>on</code>方法的时候，方法会先调用 <code>eventApi</code></p>
-
-<pre><code>var eventsApi = function(obj, action, name, rest) {
-    if (!name) return true;
-
-    // Handle event maps.
-    if (typeof name === 'object') {
-      for (var key in name) {
-        obj[action].apply(obj, [key, name[key]].concat(rest));
-      }
-      return false;
-    }
-
-    // Handle space separated event names.
-    if (eventSplitter.test(name)) {
-      var names = name.split(eventSplitter);
-      for (var i = 0, l = names.length; i &lt; l; i++) {
-        obj[action].apply(obj, [names[i]].concat(rest));
-      }
-      return false;
-    }
-
-    return true;
-};
-</code></pre>
-
-<p>我们可以看到主要是用于检测有没有一次绑定多个事件 如： <code>object.on("event1 event2"，function(){})</code>、或者 <code>object.on({"event1":function(){},"event2":function(){}})</code>，如果是这种绑定事件的话，eventsApi将会对多个事件进行分解，分别调用 <code>on</code> 事件进行绑定。</p>
+<p><code>on</code>方法用于绑定一个事件，在事件被触发的时候，绑定的回调函数会被触发，类似于DOM元素的事件机制，当然<code>backbone</code>支持自定义事件。下面我们看看<code>on</code>的实现代码：
+<figure class='code'><figcaption><span>[ ] [on]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="nx">on</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">eventsApi</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">on</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">name</span><span class="p">,</span> <span class="p">[</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">context</span><span class="p">])</span> <span class="o">||</span> <span class="o">!</span><span class="nx">callback</span><span class="p">)</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">events</span> <span class="o">||</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events = {});</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">events</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">events</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">||</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events[name] = []);</span>
+</span><span class='line'>      <span class="nx">events</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">context</span><span class="o">:</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">ctx</span><span class="o">:</span> <span class="nx">context</span> <span class="o">||</span> <span class="k">this</span><span class="p">});</span>
+</span><span class='line'>      <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+当调用<code>on</code>方法的时候，方法会先调用 <code>eventApi</code>
+<figure class='code'><figcaption><span>[ ] [eventApi]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="kd">var</span> <span class="nx">eventsApi</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">action</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">rest</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">name</span><span class="p">)</span> <span class="k">return</span> <span class="kc">true</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span>    <span class="c1">// Handle event maps.</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">obj</span><span class="p">[</span><span class="nx">action</span><span class="p">].</span><span class="nx">apply</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">name</span><span class="p">[</span><span class="nx">key</span><span class="p">]].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">rest</span><span class="p">));</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Handle space separated event names.</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">eventSplitter</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">names</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="nx">eventSplitter</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">names</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">obj</span><span class="p">[</span><span class="nx">action</span><span class="p">].</span><span class="nx">apply</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="p">[</span><span class="nx">names</span><span class="p">[</span><span class="nx">i</span><span class="p">]].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">rest</span><span class="p">));</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+我们可以看到主要是用于检测有没有一次绑定多个事件 如： <code>object.on("event1 event2"，function(){})</code>、或者 <code>object.on({"event1":function(){},"event2":function(){}})</code>，如果是这种绑定事件的话，eventsApi将会对多个事件进行分解，分别调用 <code>on</code> 事件进行绑定。</p>
 
 <p>加下去会判断有没有内部的<em>events属性，没有的话创建一个<code>object</code>，然后再判断有没有</em>events属性中有没有对应事件名，如果没有创建一个数组，然后push进去事件，返回一个Events对象，完成绑定。</p>
 
 <h4>once <code>object.once(event,callback, [context])</code></h4>
 
-<p><code>once</code>方法类似于<code>on</code>方法,区别在于使用 <code>once</code>绑定的事件只会执行一次，原因在于 <code>once</code> 方法中存在一个包装器，将回调函数进行了二次的封装，如下下:</p>
-
-<pre><code> var once = _.once(function() {
-    self.off(name, once);
-    callback.apply(this, arguments);
-  });
-</code></pre>
-
-<p>可以看到<code>callback</code>在被调用前先执行了<code>off</code>方法 ，解除事件的绑定，因此只能执行一次</p>
+<p><code>once</code>方法类似于<code>on</code>方法,区别在于使用 <code>once</code>绑定的事件只会执行一次，原因在于 <code>once</code> 方法中存在一个包装器，将回调函数进行了二次的封装，如下下:
+<figure class='code'><figcaption><span>[ ] [once]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>     <span class="kd">var</span> <span class="nx">once</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">self</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">once</span><span class="p">);</span>
+</span><span class='line'>        <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>      <span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+可以看到<code>callback</code>在被调用前先执行了<code>off</code>方法 ，解除事件的绑定，因此只能执行一次</p>
 
 <h4>off <code>object.on([event],[callback],[context]) Alias unbind</code></h4>
 
-<p><code>off</code>方法主要用于事件的解除，实现代码如下：</p>
-
-<pre><code>  off: function(name, callback, context) {
-      var retain, ev, events, names, i, l, j, k;
-      if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
-      if (!name &amp;&amp; !callback &amp;&amp; !context) {
-        this._events = void 0;
-        return this;
-      }
-      names = name ? [name] : _.keys(this._events);
-      for (i = 0, l = names.length; i &lt; l; i++) {
-        name = names[i];
-        if (events = this._events[name]) {
-          this._events[name] = retain = [];
-          if (callback || context) {
-            for (j = 0, k = events.length; j &lt; k; j++) {
-              ev = events[j];
-              if ((callback &amp;&amp; callback !== ev.callback &amp;&amp; callback !== ev.callback._callback) ||
-                  (context &amp;&amp; context !== ev.context)) {
-                retain.push(ev);
-              }
-            }
-          }
-          if (!retain.length) delete this._events[name];
-        }
-      }
-      return this;
-}
-</code></pre>
-
-<p>进入函数之后会对是否解除多个事件调用 <code>eventsApi</code> 进行检查（类似 <code>on</code>），接着检查有没有传入 <code>name</code> 、<code>callback</code> 、<code>context</code>，如果都没有，着直接将<code>_events</code>属性置空，解绑完成 。
+<p><code>off</code>方法主要用于事件的解除，实现代码如下：
+<figure class='code'><figcaption><span>[ ] [off]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>      <span class="nx">off</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">retain</span><span class="p">,</span> <span class="nx">ev</span><span class="p">,</span> <span class="nx">events</span><span class="p">,</span> <span class="nx">names</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">l</span><span class="p">,</span> <span class="nx">j</span><span class="p">,</span> <span class="nx">k</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">events</span> <span class="o">||</span> <span class="o">!</span><span class="nx">eventsApi</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">off</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">name</span><span class="p">,</span> <span class="p">[</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">context</span><span class="p">]))</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">name</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="o">!</span><span class="nx">callback</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="o">!</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events = void 0;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="nx">names</span> <span class="o">=</span> <span class="nx">name</span> <span class="o">?</span> <span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">:</span> <span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events);</span>
+</span><span class='line'>          <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">names</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="nx">name</span> <span class="o">=</span> <span class="nx">names</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span><span class="nx">events</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">events</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+</span><span class='line'>              <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events[name] = retain = [];</span>
+</span><span class='line'>              <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span> <span class="o">||</span> <span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="k">for</span> <span class="p">(</span><span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">k</span> <span class="o">=</span> <span class="nx">events</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">k</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                  <span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">j</span><span class="p">];</span>
+</span><span class='line'>                  <span class="k">if</span> <span class="p">((</span><span class="nx">callback</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="nx">callback</span> <span class="o">!==</span> <span class="nx">ev</span><span class="p">.</span><span class="nx">callback</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="nx">callback</span> <span class="o">!==</span> <span class="nx">ev</span><span class="p">.</span><span class="nx">callback</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">callback</span><span class="p">)</span> <span class="o">||</span>
+</span><span class='line'>                      <span class="p">(</span><span class="nx">context</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="nx">context</span> <span class="o">!==</span> <span class="nx">ev</span><span class="p">.</span><span class="nx">context</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>                    <span class="nx">retain</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">ev</span><span class="p">);</span>
+</span><span class='line'>                  <span class="p">}</span>
+</span><span class='line'>                <span class="p">}</span>
+</span><span class='line'>              <span class="p">}</span>
+</span><span class='line'>              <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">retain</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events[name];</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+进入函数之后会对是否解除多个事件调用 <code>eventsApi</code> 进行检查（类似 <code>on</code>），接着检查有没有传入 <code>name</code> 、<code>callback</code> 、<code>context</code>，如果都没有，着直接将<code>_events</code>属性置空，解绑完成 。
 如果存在以上参数，则检查<code>name</code>属性，如果没有则将所有的events中的事件名赋值给<code>names</code>， 然后循环检查 <code>callback</code>，如果不存在<code>callback</code>或者 <code>context</code>，则直接删除相关事件，如果存在这判断<code>callback</code>或者 <code>context</code>是否和对应的事件的<code>callback</code>或者 <code>context</code>相同，则重新建事件加回去。</p>
 
 <p>这个删除的流程是先删除，然后在判断，如果符合条件再加回来。</p>
 
 <h4>trigger <code>object.trigger(event,[*args])</code></h4>
 
-<p><code>trigger</code>方法主要用于将绑定好的事件进行触发，代码如下：</p>
-
-<pre><code>trigger: function(name) {
-  if (!this._events) return this;
-  var args = slice.call(arguments, 1);
-  if (!eventsApi(this, 'trigger', name, args)) return this;
-  var events = this._events[name];
-  var allEvents = this._events.all;
-  if (events) triggerEvents(events, args);
-  if (allEvents) triggerEvents(allEvents, arguments);
-  return this;
-}
-</code></pre>
-
-<p><code>trigger</code>方法首先对参数进行分割 , 将自定义参数的放入 <code>args</code> 中 , 然后进行 <code>eventApi</code> 检查,再从<code>_events</code>中 获取对应的事件，再获取 <code>all</code>事件，然后进行触发调用 <code>triggerEvents</code>, 代码如下：</p>
-
-<pre><code> var triggerEvents = function(events, args) {
-    var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
-    switch (args.length) {
-      case 0: while (++i &lt; l) (ev = events[i]).callback.call(ev.ctx); return;
-      case 1: while (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1); return;
-      case 2: while (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
-      case 3: while (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
-      default: while (++i &lt; l) (ev = events[i]).callback.apply(ev.ctx, args); return;
-}
-</code></pre>
-
-<p>  };</p>
-
-<p>从中可以出在自定义参数小于等于三个的时候，使用call,超过三个参数才使用apply进行调用，代码中的注释是这么去解释的：</p>
+<p><code>trigger</code>方法主要用于将绑定好的事件进行触发，代码如下：
+<figure class='code'><figcaption><span>[ ] [trigger]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="nx">trigger</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="nx">events</span><span class="p">)</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">eventsApi</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">trigger</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">args</span><span class="p">))</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">events</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;events[name];</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">allEvents</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_events</span><span class="p">.</span><span class="nx">all</span><span class="p">;</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">events</span><span class="p">)</span> <span class="nx">triggerEvents</span><span class="p">(</span><span class="nx">events</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">allEvents</span><span class="p">)</span> <span class="nx">triggerEvents</span><span class="p">(</span><span class="nx">allEvents</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure><br/>
+<code>trigger</code>方法首先对参数进行分割 , 将自定义参数的放入 <code>args</code> 中 , 然后进行 <code>eventApi</code> 检查,再从<code>_events</code>中 获取对应的事件，再获取 <code>all</code>事件，然后进行触发调用 <code>triggerEvents</code>, 代码如下：
+<figure class='code'><figcaption><span>[ ] [triggerEvents]</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>     <span class="kd">var</span> <span class="nx">triggerEvents</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">events</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">ev</span><span class="p">,</span> <span class="nx">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">events</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">a1</span> <span class="o">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">a2</span> <span class="o">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nx">a3</span> <span class="o">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span class='line'>        <span class="k">switch</span> <span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">case</span> <span class="mi">0</span><span class="o">:</span> <span class="k">while</span> <span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">)</span> <span class="p">(</span><span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">]).</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">ctx</span><span class="p">);</span> <span class="k">return</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">case</span> <span class="mi">1</span><span class="o">:</span> <span class="k">while</span> <span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">)</span> <span class="p">(</span><span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">]).</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">a1</span><span class="p">);</span> <span class="k">return</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">case</span> <span class="mi">2</span><span class="o">:</span> <span class="k">while</span> <span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">)</span> <span class="p">(</span><span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">]).</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">a1</span><span class="p">,</span> <span class="nx">a2</span><span class="p">);</span> <span class="k">return</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">case</span> <span class="mi">3</span><span class="o">:</span> <span class="k">while</span> <span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">)</span> <span class="p">(</span><span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">]).</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">a1</span><span class="p">,</span> <span class="nx">a2</span><span class="p">,</span> <span class="nx">a3</span><span class="p">);</span> <span class="k">return</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">default</span><span class="o">:</span> <span class="k">while</span> <span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span> <span class="nx">l</span><span class="p">)</span> <span class="p">(</span><span class="nx">ev</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">]).</span><span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">ev</span><span class="p">.</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span> <span class="k">return</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>        <br/>
+从中可以出在自定义参数小于等于三个的时候，使用call,超过三个参数才使用apply进行调用，代码中的注释是这么去解释的：</p>
 
 <pre><code>A difficult-to-believe, but optimized internal dispatch function for
 triggering events. Tries to keep the usual cases speedy (most internal
