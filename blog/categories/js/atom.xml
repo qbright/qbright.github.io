@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Js | 光域]]></title>
+  <link href="http://qbright.github.io/blog/categories/js/atom.xml" rel="self"/>
+  <link href="http://qbright.github.io/"/>
+  <updated>2014-12-04T14:50:48+08:00</updated>
+  <id>http://qbright.github.io/</id>
+  <author>
+    <name><![CDATA[zqbright]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Backbone学习 --- Backbone.Events]]></title>
+    <link href="http://qbright.github.io/blog/2014/12/04/backbone.Events/"/>
+    <updated>2014-12-04T14:45:04+08:00</updated>
+    <id>http://qbright.github.io/blog/2014/12/04/backbone.Events</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+</feed>
