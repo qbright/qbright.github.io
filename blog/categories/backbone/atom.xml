@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Backbone | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/backbone/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-12-04T18:37:06+08:00</updated>
+  <updated>2014-12-04T18:38:31+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -268,7 +268,7 @@ Backbone events have 3 arguments)
 <h3>目录</h3>
 
 <ol>
-<li><a href="blog/2014/12/04/backbone.Events/index.html">Backbone.Event</a></li>
+<li><a href="http://qbright.github.io/blog/2014/12/04/backbone.Events/">Backbone.Event</a></li>
 </ol>
 
 ]]></content>
