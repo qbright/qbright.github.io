@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Backbone | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/backbone/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-12-04T18:32:22+08:00</updated>
+  <updated>2014-12-04T18:35:11+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -48,8 +48,7 @@
 <h4>on   <code>object.on(event,callback,[context]) Alias:bind</code></h4>
 
 <p><code>on</code>方法用于绑定一个事件，在事件被触发的时候，绑定的回调函数会被触发，类似于DOM元素的事件机制，当然<code>backbone</code>支持自定义事件。下面我们看看<code>on</code>的实现代码：
-<figure class='code'><figcaption><span>[ ] [on]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -65,8 +64,7 @@
 </span><span class='line'>    <span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 当调用<code>on</code>方法的时候，方法会先调用 <code>eventApi</code>
-<figure class='code'><figcaption><span>[ ] [eventApi]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -124,8 +122,7 @@
 <h4>once <code>object.once(event,callback, [context])</code></h4>
 
 <p><code>once</code>方法类似于<code>on</code>方法,区别在于使用 <code>once</code>绑定的事件只会执行一次，原因在于 <code>once</code> 方法中存在一个包装器，将回调函数进行了二次的封装，如下下:
-<figure class='code'><figcaption><span>[ ] [once]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -139,8 +136,7 @@
 <h4>off <code>object.on([event],[callback],[context]) Alias unbind</code></h4>
 
 <p><code>off</code>方法主要用于事件的解除，实现代码如下：
-<figure class='code'><figcaption><span>[ ] [off]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -201,8 +197,7 @@
 <h4>trigger <code>object.trigger(event,[*args])</code></h4>
 
 <p><code>trigger</code>方法主要用于将绑定好的事件进行触发，代码如下：
-<figure class='code'><figcaption><span>[ ] [trigger]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -224,8 +219,7 @@
 </span><span class='line'>    <span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure><br/>
 <code>trigger</code>方法首先对参数进行分割 , 将自定义参数的放入 <code>args</code> 中 , 然后进行 <code>eventApi</code> 检查,再从<code>_events</code>中 获取对应的事件，再获取 <code>all</code>事件，然后进行触发调用 <code>triggerEvents</code>, 代码如下：
-<figure class='code'><figcaption><span>[ ] [triggerEvents]</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
