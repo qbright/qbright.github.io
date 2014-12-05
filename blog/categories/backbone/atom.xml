@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Backbone | 光域]]></title>
   <link href="http://qbright.github.io/blog/categories/backbone/atom.xml" rel="self"/>
   <link href="http://qbright.github.io/"/>
-  <updated>2014-12-05T18:51:18+08:00</updated>
+  <updated>2014-12-05T18:53:05+08:00</updated>
   <id>http://qbright.github.io/</id>
   <author>
     <name><![CDATA[zqbright]]></name>
@@ -19,9 +19,6 @@
     <updated>2014-12-04T14:45:04+08:00</updated>
     <id>http://qbright.github.io/blog/2014/12/04/backbone.Model</id>
     <content type="html"><![CDATA[<p>今天我们来谈谈Backbone.js MVC 中的 <code>M</code> , Model是backbone的核心部分，包含着页面展示内容的数据，还有围绕着数据操作的各种 转换，校验，计算 ，权限控制，服务端交互等等操作，你可以通过 <code>Backbone.Model.extend()</code> 生成你的model , 当然生成的model也可以作为一个基类去向下扩展更多的model
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'>
-</span></code></pre></td></tr></table></div></figure>
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
