@@ -111,7 +111,9 @@
 
 <p>下面我们分析下方法的调用过程：</p>
 
-<h4>on   <code>object.on(event,callback,[context]) Alias:bind</code></h4>
+<h4>on</h4>
+
+<p><code>object.on(event,callback,[context]) Alias:bind</code></p>
 
 <p><code>on</code>方法用于绑定一个事件，在事件被触发的时候，绑定的回调函数会被触发，类似于DOM元素的事件机制，当然<code>backbone</code>支持自定义事件。下面我们看看<code>on</code>的实现代码：</p>
 
@@ -185,7 +187,9 @@
 
 <p>加下去会判断有没有内部的<em>events属性，没有的话创建一个<code>object</code>，然后再判断有没有</em>events属性中有没有对应事件名，如果没有创建一个数组，然后push进去事件，返回一个Events对象，完成绑定。</p>
 
-<h4>once <code>object.once(event,callback, [context])</code></h4>
+<h4>once</h4>
+
+<p><code>object.once(event,callback, [context])</code></p>
 
 <p><code>once</code>方法类似于<code>on</code>方法,区别在于使用 <code>once</code>绑定的事件只会执行一次，原因在于 <code>once</code> 方法中存在一个包装器，将回调函数进行了二次的封装，如下下:</p>
 
@@ -202,7 +206,9 @@
 
 <p>可以看到<code>callback</code>在被调用前先执行了<code>off</code>方法 ，解除事件的绑定，因此只能执行一次</p>
 
-<h4>off <code>object.on([event],[callback],[context]) Alias unbind</code></h4>
+<h4>off</h4>
+
+<p><code>object.on([event],[callback],[context]) Alias unbind</code></p>
 
 <p><code>off</code>方法主要用于事件的解除，实现代码如下：</p>
 
@@ -266,7 +272,9 @@
 
 <p>这个删除的流程是先删除，然后在判断，如果符合条件再加回来。</p>
 
-<h4>trigger <code>object.trigger(event,[*args])</code></h4>
+<h4>trigger</h4>
+
+<p><code>object.trigger(event,[*args])</code></p>
 
 <p><code>trigger</code>方法主要用于将绑定好的事件进行触发，代码如下：</p>
 
@@ -375,6 +383,8 @@ Backbone events have 3 arguments)
         <a class="basic-alignment left" href="/blog/2014/12/03/backbone/" title="Previous Post: backbone 学习 --- 简介 ">&laquo; backbone 学习 &#8212; 简介 </a>
       
       
+        <a class="basic-alignment right" href="/blog/2014/12/04/backbone.Model/" title="Next Post: Backbone学习 --- Backbone.Model">Backbone学习 &#8212; Backbone.Model &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -386,6 +396,10 @@ Backbone events have 3 arguments)
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/backbone.Model/">Backbone学习 &#8212; Backbone.Model</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/12/04/backbone.Events/">Backbone学习 &#8212; Backbone.Events</a>
@@ -401,10 +415,6 @@ Backbone events have 3 arguments)
     
       <li class="post">
         <a href="/blog/2014/05/27/chrome.tabs/">chrome.tabs 的事件研究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/05/22/chrome.extension.csp/">内容安全策略(CSP)</a>
       </li>
     
   </ul>

@@ -1,0 +1,586 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Backbone学习 &#8212; Backbone.Model - 光域</title>
+  <meta name="author" content="zqbright">
+
+  
+  <meta name="description" content="今天我们来谈谈Backbone.js MVC 中的 M , Model是backbone的核心部分，包含着页面展示内容的数据，还有围绕着数据操作的各种 转换，校验，计算 ，权限控制，服务端交互等等操作，你可以通过 Backbone.Model.extend() 生成你的model , &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://qbright.github.io/blog/2014/12/04/backbone.Model">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="光域" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">光域</a></h1>
+  
+    <h2>&lt;html/&gt</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:qbright.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Backbone学习 &#8212; Backbone.Model</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-04T14:45:04+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:45 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>今天我们来谈谈Backbone.js MVC 中的 <code>M</code> , Model是backbone的核心部分，包含着页面展示内容的数据，还有围绕着数据操作的各种 转换，校验，计算 ，权限控制，服务端交互等等操作，你可以通过 <code>Backbone.Model.extend()</code> 生成你的model , 当然生成的model也可以作为一个基类去向下扩展更多的model</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>   <span class="kd">var</span> <span class="nx">People</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+</span><span class='line'>          
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">Man</span> <span class="o">=</span> <span class="nx">People</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<!-- more -->
+
+
+<h3>Backbone.Model Api</h3>
+
+<p>Backbone.Model 提供了大量方法用于实现一个Model的基本操作，当然其中最基本的还是基于 <code>Backbone.Events</code> 的事件机制，在Model的attributes发生变化的时候，相应的 <code>change:attr</code>事件会被触发，下面是提供的API:</p>
+
+<p><img src="https://raw.githubusercontent.com/qbright/post/master/image/20141205165058.png" alt="" /></p>
+
+<p>其中有对数据进行服务端操作的方法：</p>
+
+<ul>
+<li>sync   :  包装了<code>Backbone.sync</code>，<code>xhr</code>的基类</li>
+<li>fetch  :  用于从服务端获取数据</li>
+<li>save   ： 向服务端持久化数据</li>
+<li>destroy： 从服务端删除数据</li>
+</ul>
+
+
+<p>model中数据操作的方法：</p>
+
+<ul>
+<li>get ： 从<code>attributes</code>中获取数据</li>
+<li>set ： 向<code>attributes</code>中设置数据</li>
+<li>escape : 对数据进行编码 ，使用的是<code>underscore</code>的 <code>_.escape</code></li>
+<li>has : <code>attributes</code>中有无对应数据</li>
+<li>unset : 从<code>attributes</code>中删除数据</li>
+<li>clear : 清空<code>attributes</code>数据</li>
+<li>changed : 与上个状态（执行过<code>set</code>，<code>unset</code>），相比变化的值</li>
+<li>toJSON ： 将 <code>attributes</code> 序列化成一个对象</li>
+<li>parse : 当设置项<code>parse</code>为真的时候，初始化<code>/set/unset/fetch</code>等数据操作中会对目标数据进行一个解析返回解析后的对象，此方法为空方法，需要重写覆盖</li>
+<li>hasChanged : 与上个状态(执行过<code>set</code>,<code>unset</code>),相比是否发生过变化</li>
+<li>changeAttributes : 与上个状态(执行过<code>set</code>,<code>unset</code>),相比发生的所有值</li>
+<li>previous : 前一状态 (执行过<code>set</code>,<code>unset</code>)，该属性对应的值</li>
+<li>previousAttributes : 与上个状态(执行过<code>set</code>,<code>unset</code>),发生过变化对象的前一个状态的所有值</li>
+</ul>
+
+
+<p>model中数据校验的方法：</p>
+
+<ul>
+<li>validate：用于对<code>model</code>中数据进行校验，需要重写覆盖默认方法</li>
+<li>validationError : 返回最近一个<code>invalid</code>时返回的值</li>
+<li>isValid ： 调用<code>_validate</code>方法</li>
+</ul>
+
+
+<p>下面会针对一些重点的api进行讲解：</p>
+
+<h4>构造函数</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>   
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">Model</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">attributes</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">attrs</span> <span class="o">=</span> <span class="nx">attributes</span> <span class="o">||</span> <span class="p">{};</span>
+</span><span class='line'>          <span class="nx">options</span> <span class="o">||</span> <span class="p">(</span><span class="nx">options</span> <span class="o">=</span> <span class="p">{});</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">cid</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">uniqueId</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">collection</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">collection</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">collection</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">parse</span><span class="p">)</span> <span class="nx">attrs</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">attrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="o">||</span> <span class="p">{};</span>
+</span><span class='line'>          <span class="nx">attrs</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span><span class="p">({},</span> <span class="nx">attrs</span><span class="p">,</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;defaults&#39;</span><span class="p">));</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">attrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">changed</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">initialize</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>      <span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>构造函数主要对初始化的数据和选项进行设置，然后会对生成一个唯一的<code>cid</code>用于标示<code>model</code>,如果<code>options</code>中的<code>parse</code>为<code>true</code>,那么会对初始化数值通过<code>parse</code>方法进行一个解析，调用<code>set</code>方法，所有的初始值会被存入<code>attributes</code>中，调用<code>initialize</code>初始化方法 。<code>model</code>的初始化就完成了。</p>
+
+<h4>set</h4>
+
+<p> <code>model.set(attributes, [options])</code></p>
+
+<p><code>set</code>方法会将值设置进入<code>attribute</code>中，设置时如果设置了<code>slient</code>为<code>true</code>,会触发相应的 <code>change:attr</code> 的事件，最后统一触发<code>change</code>事件，set方法部分代码如下：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">val</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="c1">//......</span>
+</span><span class='line'>
+</span><span class='line'>           <span class="c1">// key值可以是键值对，也可以是一个字符串,将赋值传入attrs属性中   </span>
+</span><span class='line'>       <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">key</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">attrs</span> <span class="o">=</span> <span class="nx">key</span><span class="p">;</span>
+</span><span class='line'>          <span class="nx">options</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>          <span class="p">(</span><span class="nx">attrs</span> <span class="o">=</span> <span class="p">{})[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// ....</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="c1">//对设置的值进行校验 </span>
+</span><span class='line'>           <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_validate</span><span class="p">(</span><span class="nx">attrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">))</span> <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>       <span class="nx">unset</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">unset</span><span class="p">;</span> <span class="c1">// unset为true时会删除设置的值,unset方法就是通过 set(key,val,{unset:true})去实现的</span>
+</span><span class='line'>      
+</span><span class='line'>       <span class="c1">//当对象正在被被设置的时候，不给 previousAttributes 赋值</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">changing</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">_previousAttributes</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">attributes</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">changed</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>  
+</span><span class='line'>        <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">attributes</span><span class="p">,</span> <span class="nx">prev</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_previousAttributes</span><span class="p">;</span>
+</span><span class='line'>  
+</span><span class='line'>        <span class="c1">//如果对Id进行了设置，则对对象的id属性也进行改变</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">idAttribute</span> <span class="k">in</span> <span class="nx">attrs</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">attrs</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">idAttribute</span><span class="p">];</span>
+</span><span class='line'>  
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//进行 设置或者是删除操作</span>
+</span><span class='line'>        <span class="k">for</span> <span class="p">(</span><span class="nx">attr</span> <span class="k">in</span> <span class="nx">attrs</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">val</span> <span class="o">=</span> <span class="nx">attrs</span><span class="p">[</span><span class="nx">attr</span><span class="p">];</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_</span><span class="p">.</span><span class="nx">isEqual</span><span class="p">(</span><span class="nx">current</span><span class="p">[</span><span class="nx">attr</span><span class="p">],</span> <span class="nx">val</span><span class="p">))</span> <span class="nx">changes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">attr</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_</span><span class="p">.</span><span class="nx">isEqual</span><span class="p">(</span><span class="nx">prev</span><span class="p">[</span><span class="nx">attr</span><span class="p">],</span> <span class="nx">val</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="nx">changed</span><span class="p">[</span><span class="nx">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span><span class="c1">//为model的changed进行设置</span>
+</span><span class='line'>          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">changed</span><span class="p">[</span><span class="nx">attr</span><span class="p">];</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="nx">unset</span> <span class="o">?</span> <span class="k">delete</span> <span class="nx">current</span><span class="p">[</span><span class="nx">attr</span><span class="p">]</span> <span class="o">:</span> <span class="nx">current</span><span class="p">[</span><span class="nx">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span><span class="c1">//如果unset被设置成true了，则进行删除操作</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>  
+</span><span class='line'>        <span class="c1">//在silent不为false 的情况下，进行change:attr事件发送</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">silent</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">changes</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">_pending</span> <span class="o">=</span> <span class="nx">options</span><span class="p">;</span>
+</span><span class='line'>          <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">changes</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;change:&#39;</span> <span class="o">+</span> <span class="nx">changes</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="k">this</span><span class="p">,</span> <span class="nx">current</span><span class="p">[</span><span class="nx">changes</span><span class="p">[</span><span class="nx">i</span><span class="p">]],</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>  
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//触发change事件</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">changing</span><span class="p">)</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">silent</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">while</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_pending</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="nx">options</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_pending</span><span class="p">;</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="nx">_pending</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;change&#39;</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">_pending</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">_changing</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      
+</span><span class='line'>   <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>set</code>的整个流程就是 对传入的数值进行处理，变成一个键值对，然后对数值进行校验，检查正确性，然后开始进行设置操作，设置时检查数值时候是发生改变的，如果有则加入一个 <code>changeed</code>的对象中，然后检查<code>unset</code>的值，进行相应的添加更新删除操作。然后依次触发<code>change:attr</code>和<code>change</code>事件。</p>
+
+<h4>save</h4>
+
+<p><code>model.save([attributes], [options])</code></p>
+
+<p>save方法用于向客户端持久化数据，会根据数据的不同和配置的不同选择使用create,update或者是patch,并且触发 sync 事件，以下为部分代码：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="nx">save</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">val</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>          
+</span><span class='line'>       <span class="c1">// ......</span>
+</span><span class='line'>  
+</span><span class='line'>
+</span><span class='line'>  
+</span><span class='line'>        <span class="c1">//当设置了wait属性true的时候 ,  save方法先不执行set方法(不触发change事件),只执行validate</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">attrs</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">wait</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">attrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">))</span> <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_validate</span><span class="p">(</span><span class="nx">attrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">))</span> <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//如果wait为true,设置this.attributes</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">attrs</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">wait</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">({},</span> <span class="nx">attributes</span><span class="p">,</span> <span class="nx">attrs</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>  
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// .....</span>
+</span><span class='line'>      
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">model</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">success</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">;</span>
+</span><span class='line'>        <span class="nx">options</span><span class="p">.</span><span class="nx">success</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="c1">// Ensure attributes are restored during synchronous saves.</span>
+</span><span class='line'>          <span class="nx">model</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="nx">attributes</span><span class="p">;</span>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">serverAttrs</span> <span class="o">=</span> <span class="nx">model</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">resp</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>          <span class="c1">//如果wait为true , 那么会在请求返回之后才进行set操作</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">wait</span><span class="p">)</span> <span class="nx">serverAttrs</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">attrs</span> <span class="o">||</span> <span class="p">{},</span> <span class="nx">serverAttrs</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span><span class="p">(</span><span class="nx">serverAttrs</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">model</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">serverAttrs</span><span class="p">,</span> <span class="nx">options</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="nx">success</span><span class="p">)</span> <span class="nx">success</span><span class="p">(</span><span class="nx">model</span><span class="p">,</span> <span class="nx">resp</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>          <span class="c1">//触发 sync 事件</span>
+</span><span class='line'>          <span class="nx">model</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="nx">model</span><span class="p">,</span> <span class="nx">resp</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//生成XHR onerror 回调函数</span>
+</span><span class='line'>        <span class="nx">wrapError</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>        <span class="c1">//选择方法</span>
+</span><span class='line'>        <span class="nx">method</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">isNew</span><span class="p">()</span> <span class="o">?</span> <span class="s1">&#39;create&#39;</span> <span class="o">:</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">patch</span> <span class="o">?</span> <span class="s1">&#39;patch&#39;</span> <span class="o">:</span> <span class="s1">&#39;update&#39;</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">method</span> <span class="o">===</span> <span class="s1">&#39;patch&#39;</span><span class="p">)</span> <span class="nx">options</span><span class="p">.</span><span class="nx">attrs</span> <span class="o">=</span> <span class="nx">attrs</span><span class="p">;</span>
+</span><span class='line'>        <span class="nx">xhr</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">sync</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+</span><span class='line'>  
+</span><span class='line'>        <span class="c1">// Restore attributes.</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">attrs</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">wait</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="nx">attributes</span><span class="p">;</span>
+</span><span class='line'>        <span class="c1">//返回xhr对象</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nx">xhr</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>save</code> 中最需要注意的就是 <code>wait</code> 的设置，当<code>wait</code>为真的时候，<code>save</code>返回会在<code>xhr</code>返回之后再执行<code>set</code>操作，而不是在<code>xhr</code>之前就进行<code>set</code>操作，因此<code>change</code>事件的触发时机也就不同了。</p>
+
+<p>之前说过整个Backbone都是通过事件串联起来的，所以对于事件触发时机的了解和把握是非常重要的，不然会在开发过程中导致一些奇怪的问题出现。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">zqbright</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-12-04T14:45:04+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:45 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/backbone/'>backbone</a>, <a class='category' href='/blog/categories/js/'>js</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://qbright.github.io/blog/2014/12/04/backbone.Model/" data-via="" data-counturl="http://qbright.github.io/blog/2014/12/04/backbone.Model/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/12/04/backbone.Events/" title="Previous Post: Backbone学习 --- Backbone.Events">&laquo; Backbone学习 &#8212; Backbone.Events</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<!-- <aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/backbone.Model/">Backbone学习 &#8212; Backbone.Model</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/backbone.Events/">Backbone学习 &#8212; Backbone.Events</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/03/backbone/">Backbone 学习 &#8212; 简介</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/31/chrome.webRequest/">chrome.webRequest 研究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/27/chrome.tabs/">chrome.tabs 的事件研究</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/qbright">@qbright</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'qbright',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside> &#8211;>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - zqbright -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
