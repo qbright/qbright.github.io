@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>backbone.View - 光域</title>
+  <meta name="author" content="zqbright">
+
+  
+  <meta name="description" content="前面已经对backbone中的Event、Model、Collection代码进行了分析，现在我们来看下MVC中的V部分，也就是Backbone.View，View在Backbone中主要用于沟通页面中的DOM和Backbone.Model/Collection，页面的逻辑操作，DOM事件的绑定等 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://qbright.github.io/blog/2014/12/08/backbone.View">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="光域" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">光域</a></h1>
+  
+    <h2>&lt;html/&gt</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:qbright.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">backbone.View</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-08T15:38:34+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>3:38 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前面已经对backbone中的Event、Model、Collection代码进行了分析，现在我们来看下MVC中的<code>V</code>部分，也就是<code>Backbone.View</code>，View在Backbone中主要用于沟通页面中的DOM和<code>Backbone.Model/Collection</code>，页面的逻辑操作，DOM事件的绑定等，View部分的代码非常简答，加上注释只有110左右。
+View部分有一下API：</p>
+
+<p><img src="https://raw.githubusercontent.com/qbright/post/master/image/20141208155302.png" alt="" /></p>
+
+<!-- more -->
+
+
+<p>方法不多，下面对部分API进行介绍:</p>
+
+<h4>构造方法</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>   <span class="kd">var</span> <span class="nx">viewOptions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;collection&#39;</span><span class="p">,</span> <span class="s1">&#39;el&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="s1">&#39;className&#39;</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="s1">&#39;events&#39;</span><span class="p">];</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">View</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">this</span><span class="p">.</span><span class="nx">cid</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">uniqueId</span><span class="p">(</span><span class="s1">&#39;view&#39;</span><span class="p">);</span>
+</span><span class='line'>      <span class="nx">options</span> <span class="o">||</span> <span class="p">(</span><span class="nx">options</span> <span class="o">=</span> <span class="p">{});</span>
+</span><span class='line'>      <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">_</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">viewOptions</span><span class="p">));</span>
+</span><span class='line'>      <span class="k">this</span><span class="p">.</span><span class="nx">_ensureElement</span><span class="p">();</span>
+</span><span class='line'>      <span class="k">this</span><span class="p">.</span><span class="nx">initialize</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">this</span><span class="p">.</span><span class="nx">delegateEvents</span><span class="p">();</span>
+</span><span class='line'>  <span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>构造方法中为View生成了一个唯一的cid,以&#8217;view&#8217;开头,然后进行对目标属性viewOptions进行合并，接着调用<code>_ensureElement</code>判断el的情况，接着调用<code>delegateEvents</code>进行方法绑定，初始化完成 。</p>
+
+<h4>delegateEvents</h4>
+
+<p><code>view.setElement(element)</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>     <span class="nx">setElement</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">delegate</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">undelegateEvents</span><span class="p">();</span><span class="c1">//如果已经存在this.$el，进行事件解绑</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//对$el进行赋值，本质是一个jquery或者是 Lo-Dash and Zepto 对象</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span> <span class="o">=</span> <span class="nx">element</span> <span class="k">instanceof</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">$</span> <span class="o">?</span> <span class="nx">element</span> <span class="o">:</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">$</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span>
+</span><span class='line'>        <span class="c1">//把dom element 赋值给el</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">el</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="c1">//如果没有显式传值,则进行事件绑定</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">delegate</span> <span class="o">!==</span> <span class="kc">false</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">delegateEvents</span><span class="p">();</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>setElement</code>方法用于设置<code>View</code>对应的<code>element</code> , 这个方法在<code>new</code>的时候会被调用， 如果想要在使用过程中改变<code>View</code>的<code>dom</code>元素指向，可调用这个方法进行重新设置</p>
+
+<h4>_ensureElement</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>    <span class="nx">_ensureElement</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>          <span class="c1">//如果已经对el进行设置，直接调用setElement方法</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">el</span><span class="p">)</span> <span class="p">{</span><span class="c1">//如果没有设置，生成一个元素对象，再调用setElement方法</span>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">attrs</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">({},</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;attributes&#39;</span><span class="p">));</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">)</span> <span class="nx">attrs</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">className</span><span class="p">)</span> <span class="nx">attrs</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;className&#39;</span><span class="p">);</span>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">$el</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span> <span class="o">+</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="nx">attrs</span><span class="p">);</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">setElement</span><span class="p">(</span><span class="nx">$el</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">this</span><span class="p">.</span><span class="nx">setElement</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;el&#39;</span><span class="p">),</span> <span class="kc">false</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>_ensureElement</code>这个方法是内部方法，在构造函数中使用，用于判断指定的<code>el</code>在页面中存不存在，如果存在则对<code>$el</code>进行赋值，如果不存在，则生成一个<code>$el</code>,但是要注意这个对象是没有落地到<code>dom</code>树中的 。</p>
+
+<h4>delegateEvents</h4>
+
+<p><code>delegateEvents([events])</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'>       <span class="c1">// *{&quot;event selector&quot;: &quot;callback&quot;}*</span>
+</span><span class='line'>      <span class="c1">//</span>
+</span><span class='line'>      <span class="c1">//     {</span>
+</span><span class='line'>      <span class="c1">//       &#39;mousedown .title&#39;:  &#39;edit&#39;,</span>
+</span><span class='line'>      <span class="c1">//       &#39;click .button&#39;:     &#39;save&#39;,</span>
+</span><span class='line'>      <span class="c1">//       &#39;click .open&#39;:       function(e) { ... }</span>
+</span><span class='line'>      <span class="c1">//     }</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">delegateEvents</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">events</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>            <span class="c1">//如果不存在events,则直接返回</span>
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nx">events</span> <span class="o">||</span> <span class="p">(</span><span class="nx">events</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;events&#39;</span><span class="p">))))</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      
+</span><span class='line'>            <span class="c1">//先解除所有的事件绑定</span>
+</span><span class='line'>            <span class="k">this</span><span class="p">.</span><span class="nx">undelegateEvents</span><span class="p">();</span>
+</span><span class='line'>      
+</span><span class='line'>            <span class="c1">//处理每个事件</span>
+</span><span class='line'>            <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">events</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="kd">var</span> <span class="nx">method</span> <span class="o">=</span> <span class="nx">events</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+</span><span class='line'>              <span class="c1">//解析回调函数</span>
+</span><span class='line'>              <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">method</span><span class="p">))</span> <span class="nx">method</span> <span class="o">=</span> <span class="k">this</span><span class="p">[</span><span class="nx">events</span><span class="p">[</span><span class="nx">key</span><span class="p">]];</span>
+</span><span class='line'>              <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">method</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+</span><span class='line'>      
+</span><span class='line'>              <span class="c1">//对选择器进行分析</span>
+</span><span class='line'>              <span class="kd">var</span> <span class="nx">match</span> <span class="o">=</span> <span class="nx">key</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">delegateEventSplitter</span><span class="p">);</span>
+</span><span class='line'>              <span class="kd">var</span> <span class="nx">eventName</span> <span class="o">=</span> <span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nx">selector</span> <span class="o">=</span> <span class="nx">match</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span class='line'>              <span class="nx">method</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+</span><span class='line'>      
+</span><span class='line'>              <span class="c1">//绑定的事件名都是以 eventName + &#39;.delegateEvents&#39; + cid 组成,</span>
+</span><span class='line'>              <span class="c1">//这么做能够在undelegateEvents的时候选择到这个View的所有事件</span>
+</span><span class='line'>              <span class="nx">eventName</span> <span class="o">+=</span> <span class="s1">&#39;.delegateEvents&#39;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">cid</span><span class="p">;</span>
+</span><span class='line'>              <span class="k">if</span> <span class="p">(</span><span class="nx">selector</span> <span class="o">===</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">eventName</span><span class="p">,</span> <span class="nx">method</span><span class="p">);</span>
+</span><span class='line'>              <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>                <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">eventName</span><span class="p">,</span> <span class="nx">selector</span><span class="p">,</span> <span class="nx">method</span><span class="p">);</span>
+</span><span class='line'>              <span class="p">}</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+</span><span class='line'>      <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在View中你可以使用一个 key:value 集合指定对应的事件，在初始化的时候构造函数会调用delegateEvents进行绑定，需要注意的是所有在key中指定的元素的父元素都必须是$el,也就是说元素必须是$el的子节点，否则绑定失败。</p>
+
+<p>View和其他backbone模块一个区别就是没有自己的内建自定义事件，当然他也组合了Events模块，但是所有的事件都需要自己进行建立。View主要是一个MVC模型的承载，其实真正的功能不多，其实从模型层面上看V在前端开发中是最接近业务逻辑的，所以在View中大部分的逻辑都是开发者自己去扩展的。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">zqbright</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-12-08T15:38:34+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>3:38 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/backbone-dot-js/'>backbone.js</a>, <a class='category' href='/blog/categories/js/'>js</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://qbright.github.io/blog/2014/12/08/backbone.View/" data-via="" data-counturl="http://qbright.github.io/blog/2014/12/08/backbone.View/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/12/08/backbone.Collectioin/" title="Previous Post: Backbone源码学习 --- Backbone.Collection">&laquo; Backbone源码学习 &#8212; Backbone.Collection</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<!-- <aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/08/backbone.View/">backbone.View</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/08/backbone.Collectioin/">Backbone源码学习 &#8212; Backbone.Collection</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/backbone.Model/">Backbone源码学习 &#8212; Backbone.Model</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/backbone.Events/">Backbone源码学习 &#8212; Backbone.Events</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/03/backbone/">Backbone源码学习 &#8212; 简介</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/qbright">@qbright</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'qbright',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside> &#8211;>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - zqbright -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
